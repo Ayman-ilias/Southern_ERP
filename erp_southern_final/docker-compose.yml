@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: rmg_erp_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: rmg_erp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./shad-theme-dashboard/backend
+      dockerfile: Dockerfile
+    container_name: rmg_erp_backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    volumes:
+      - ./shad-theme-dashboard/backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=rmg_erp
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./shad-theme-dashboard
+      dockerfile: Dockerfile.frontend
+    container_name: rmg_erp_frontend
+    command: npm run start
+    volumes:
+      - ./shad-theme-dashboard/app:/app/app
+      - ./shad-theme-dashboard/components:/app/components
+      - ./shad-theme-dashboard/lib:/app/lib
+      - ./shad-theme-dashboard/public:/app/public
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+

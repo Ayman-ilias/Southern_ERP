@@ -245,10 +245,15 @@
   .space-y-6 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 1rem;
   }
-  
+
   /* Make tables scrollable if content is tall */
   .table-container {
     @apply max-h-[calc(100vh-300px)] overflow-auto;
   }
+}
+
+/* Hide Next.js development panel/toolbar */
+nextjs-portal {
+  display: none !important;
 }
 

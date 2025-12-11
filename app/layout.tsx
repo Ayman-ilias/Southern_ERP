@@ -5,12 +5,24 @@ import { ThemeProvider } from "next-themes";
 import GoogleAnalyticsInit from "@/lib/ga";
 import { fontVariables } from "@/lib/fonts";
 import NextTopLoader from "nextjs-toploader";
+import type { Metadata } from "next";
 
 import "./globals.css";
 
-import { ActiveThemeProvider } from "@/components/active-theme";
+import { ActiveThemeProvider } from "@/components/shared/active-theme";
 import { DEFAULT_THEME } from "@/lib/themes";
 import { ClientProviders } from "@/components/providers/client-providers";
+import { DevTools } from "@/components/dev-tools";
+
+export const metadata: Metadata = {
+  title: "Southern Apparels",
+  description: "Southern Apparels and Holdings ERP System",
+  icons: {
+    icon: "/logo.jpeg",
+    shortcut: "/logo.jpeg",
+    apple: "/logo.jpeg",
+  },
+};
 
 export default async function RootLayout({
   children
@@ -47,6 +59,7 @@ export default async function RootLayout({
             <ClientProviders>
               {children}
               {process.env.NODE_ENV === "production" ? <GoogleAnalyticsInit /> : null}
+              {process.env.NODE_ENV === "development" ? <DevTools /> : null}
             </ClientProviders>
           </ActiveThemeProvider>
         </ThemeProvider>

@@ -1,39 +1,30 @@
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { FileQuestion, Home } from "lucide-react";
+import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="bg-background grid h-screen items-center pb-8 lg:grid-cols-2 lg:pb-0">
-      <div className="text-center">
-        <p className="text-muted-foreground text-base font-semibold">404</p>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight md:text-5xl lg:text-7xl">
-          Page not found
-        </h1>
-        <p className="text-muted-foreground mt-6 text-base leading-7">
-          Sorry, we couldn’t find the page you’re looking for.
-        </p>
-        <div className="mt-10 flex items-center justify-center gap-x-2">
-          <Button size="lg" asChild>
-            <Link href="/dashboard">Go back home</Link>
-          </Button>
-          <Button size="lg" variant="ghost">
-            Contact support <ArrowRight className="ms-2 h-4 w-4" />
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md p-8 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="rounded-full bg-muted p-4">
+            <FileQuestion className="h-12 w-12 text-muted-foreground" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Page Not Found</h2>
+            <p className="text-muted-foreground">
+              The page you're looking for doesn't exist or has been moved.
+            </p>
+          </div>
+          <Button asChild className="w-full mt-4">
+            <Link href="/dashboard/erp">
+              <Home className="mr-2 h-4 w-4" />
+              Return to Dashboard
+            </Link>
           </Button>
         </div>
-      </div>
-      <div className="hidden lg:block">
-        <Image
-          src={`/images/404.svg`}
-          width={300}
-          height={400}
-          className="w-full object-contain lg:max-w-2xl"
-          alt="not found image"
-          unoptimized
-        />
-      </div>
+      </Card>
     </div>
   );
 }

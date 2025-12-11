@@ -1,0 +1,219 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Optimized for Production
+  db:
+    image: postgres:15-alpine
+    container_name: rmg_erp_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_in_production}
+      POSTGRES_DB: ${POSTGRES_DB:-rmg_erp}
+      # Performance tuning
+      POSTGRES_MAX_CONNECTIONS: 250
+      POSTGRES_SHARED_BUFFERS: 2GB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 6GB
+      POSTGRES_WORK_MEM: 16MB
+      POSTGRES_MAINTENANCE_WORK_MEM: 512MB
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persistent data volume - YOUR DATA IS SAFE HERE
+      - postgres_data:/var/lib/postgresql/data
+      # Backup directory
+      - ./backups/postgres:/backups
+      # Custom PostgreSQL config (optional)
+      - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+    shm_size: '2gb'  # Shared memory for PostgreSQL
+    networks:
+      - erp_network
+
+  # Redis Cache - For Performance Optimization
+  redis:
+    image: redis:7-alpine
+    container_name: rmg_erp_redis_prod
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      # Persistent Redis data
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - erp_network
+
+  # Backend API - FastAPI with Gunicorn Multi-Workers
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rmg_erp_backend_prod
+    restart: always
+    # PRODUCTION COMMAND: Gunicorn with 8 workers for 200+ concurrent users
+    command: gunicorn app.main:app --workers 8 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 120 --keep-alive 5 --access-logfile - --error-logfile - --log-level info
+    volumes:
+      - ./backend:/app
+      # Logs directory
+      - ./logs/backend:/app/logs
+    ports:
+      - "8000:8000"
+    environment:
+      # Database Configuration
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme_in_production}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-rmg_erp}
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      # Application Settings
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - SECRET_KEY=${SECRET_KEY:-changeme_generate_random_secret}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=10080
+      # Performance Settings
+      - WORKERS=8
+      - MAX_CONNECTIONS=200
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+    networks:
+      - erp_network
+
+  # Frontend - Next.js Optimized Build
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.production
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://your-server-ip:8000}
+    container_name: rmg_erp_frontend_prod
+    restart: always
+    # Production build command
+    command: npm start
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://your-server-ip:8000}
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - erp_network
+
+  # Nginx Reverse Proxy (Optional but Recommended)
+  nginx:
+    image: nginx:alpine
+    container_name: rmg_erp_nginx_prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL certificates
+      - nginx_cache:/var/cache/nginx
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - erp_network
+
+# Persistent Volumes - YOUR DATA WILL NOT BE LOST!
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/postgres  # Customize path as needed
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}/redis
+  nginx_cache:
+    driver: local
+
+# Network Configuration
+networks:
+  erp_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

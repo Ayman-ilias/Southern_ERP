@@ -71,7 +71,8 @@ export default function SampleTNAPage() {
 
   const loadTNARecords = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/tna");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/tna`);
       if (response.ok) {
         const data = await response.json();
           // Records loaded successfully
@@ -91,7 +92,8 @@ export default function SampleTNAPage() {
 
   const loadSamples = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/`);
       if (response.ok) {
         const data = await response.json();
         setSamples(Array.isArray(data) ? data : []);
@@ -311,7 +313,8 @@ export default function SampleTNAPage() {
     try {
       if (editingTna) {
         // Update existing TNA record
-        await fetch(`http://localhost:8000/api/v1/samples/tna/${editingTna.id}`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+        await fetch(`${API_URL}/api/v1/samples/tna/${editingTna.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -330,7 +333,8 @@ export default function SampleTNAPage() {
               // Note: sizes are stored in variant, not in TNA
             };
             // Creating record for piece
-            return fetch("http://localhost:8000/api/v1/samples/tna", {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+            return fetch(`${API_URL}/api/v1/samples/tna`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(tnaData),
@@ -359,7 +363,8 @@ export default function SampleTNAPage() {
         } else {
           // Single TNA record
           // Creating single record
-          const response = await fetch("http://localhost:8000/api/v1/samples/tna", {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+          const response = await fetch(`${API_URL}/api/v1/samples/tna`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData),
@@ -412,7 +417,8 @@ export default function SampleTNAPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this TNA record?")) {
       try {
-        await fetch(`http://localhost:8000/api/v1/samples/tna/${id}`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+        await fetch(`${API_URL}/api/v1/samples/tna/${id}`, {
           method: "DELETE",
         });
         toast.success("TNA record deleted successfully");

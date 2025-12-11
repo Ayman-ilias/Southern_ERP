@@ -70,7 +70,8 @@ export default function SamplePlanPage() {
 
   const loadPlanRecords = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/plan");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/plan`);
       if (response.ok) {
         const data = await response.json();
         setPlanRecords(Array.isArray(data) ? data : []);
@@ -88,7 +89,8 @@ export default function SamplePlanPage() {
 
   const loadTNARecords = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/tna");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/tna`);
       if (response.ok) {
         const data = await response.json();
         setTnaRecords(Array.isArray(data) ? data : []);
@@ -143,8 +145,9 @@ export default function SamplePlanPage() {
 
     try {
       // Fetch TNA details by sample_id
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const response = await fetch(
-        `http://localhost:8000/api/v1/samples/tna/${sampleId}`
+        `${API_URL}/api/v1/samples/tna/${sampleId}`
       );
       const tna = await response.json();
 
@@ -200,7 +203,8 @@ export default function SamplePlanPage() {
         round: newRound,
       };
 
-      await fetch("http://localhost:8000/api/v1/samples/plan", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      await fetch(`${API_URL}/api/v1/samples/plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(submissionData),

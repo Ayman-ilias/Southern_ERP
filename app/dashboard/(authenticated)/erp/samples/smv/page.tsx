@@ -53,7 +53,8 @@ export default function SMVCalculationPage() {
 
   const loadSamples = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/`);
       if (response.ok) {
         const data = await response.json();
         setSamples(Array.isArray(data) ? data : []);
@@ -68,8 +69,9 @@ export default function SMVCalculationPage() {
 
   const loadOperations = async () => {
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const response = await fetch(
-        "http://localhost:8000/api/v1/samples/operations-master"
+        `${API_URL}/api/v1/samples/operations-master`
       );
       if (response.ok) {
         const data = await response.json();
@@ -85,7 +87,8 @@ export default function SMVCalculationPage() {
 
   const loadSMVRecords = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/smv");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/smv`);
       if (response.ok) {
         const data = await response.json();
         setSmvRecords(Array.isArray(data) ? data : []);
@@ -154,8 +157,9 @@ export default function SMVCalculationPage() {
     setSelectedSampleId(sampleId);
 
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const response = await fetch(
-        `http://localhost:8000/api/v1/samples/by-sample-id/${sampleId}`
+        `${API_URL}/api/v1/samples/by-sample-id/${sampleId}`
       );
       const sample = await response.json();
 
@@ -275,7 +279,8 @@ export default function SMVCalculationPage() {
         total_smv: calculateTotalSMV(),
       };
 
-      const response = await fetch("http://localhost:8000/api/v1/samples/smv", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/smv`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(smvData),

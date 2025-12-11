@@ -54,7 +54,7 @@ export function DevTools() {
   const checkApiStatus = async () => {
     setApiStatus("checking");
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const response = await fetch(`${API_URL}/api/v1/auth/me`, {
         method: "GET",
         headers: {
@@ -70,7 +70,7 @@ export function DevTools() {
   const testApiEndpoint = async () => {
     setIsTestingApi(true);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const response = await fetch(`${API_URL}${apiEndpoint}`, {
         method: "GET",
         headers: {
@@ -201,7 +201,7 @@ export function DevTools() {
                 </Button>
               </div>
               <div className="pl-5 text-xs text-muted-foreground">
-                URL: <span className="font-mono bg-muted px-1 rounded">{process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}</span>
+                URL: <span className="font-mono bg-muted px-1 rounded">{process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333"}</span>
               </div>
             </div>
 

@@ -199,7 +199,8 @@ export default function BuyersPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this buyer?")) {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/buyers/${id}`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+        const response = await fetch(`${API_URL}/api/v1/buyers/${id}`, {
           method: 'DELETE',
         });
 

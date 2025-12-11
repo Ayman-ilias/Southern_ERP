@@ -112,8 +112,9 @@ export default function OperationsPage() {
 
   const loadOperations = async () => {
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const response = await fetch(
-        "http://localhost:8000/api/v1/samples/operations-master"
+        `${API_URL}/api/v1/samples/operations-master`
       );
       if (response.ok) {
         const data = await response.json();
@@ -159,10 +160,11 @@ export default function OperationsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const method = editingOperation ? "PUT" : "POST";
       const url = editingOperation
-        ? `http://localhost:8000/api/v1/samples/operations-master/${editingOperation.id}`
-        : "http://localhost:8000/api/v1/samples/operations-master";
+        ? `${API_URL}/api/v1/samples/operations-master/${editingOperation.id}`
+        : `${API_URL}/api/v1/samples/operations-master`;
 
       const response = await fetch(url, {
         method,
@@ -197,7 +199,8 @@ export default function OperationsPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this operation?")) {
       try {
-        await fetch(`http://localhost:8000/api/v1/samples/operations-master/${id}`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+        await fetch(`${API_URL}/api/v1/samples/operations-master/${id}`, {
           method: "DELETE",
         });
         toast.success("Operation deleted successfully");

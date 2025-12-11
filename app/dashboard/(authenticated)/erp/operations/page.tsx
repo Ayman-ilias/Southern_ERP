@@ -41,9 +41,10 @@ export default function OperationsPage() {
 
   const fetchData = async () => {
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const [opsRes, smvRes] = await Promise.all([
-        fetch("http://localhost:8000/api/v1/operations/"),
-        fetch("http://localhost:8000/api/v1/smv-settings/")
+        fetch(`${API_URL}/api/v1/operations/`),
+        fetch(`${API_URL}/api/v1/smv-settings/`)
       ]);
       setOperations(await opsRes.json());
       setSmvSettings(await smvRes.json());

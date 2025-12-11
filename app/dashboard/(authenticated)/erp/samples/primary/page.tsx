@@ -42,7 +42,8 @@ const generateSampleId = async (buyerName: string) => {
 
   // Get existing samples with same buyer/year/month to find next sequence
   try {
-    const response = await fetch(`http://localhost:8000/api/v1/samples/?buyer_code=${buyerCode}&year=${year}&month=${month}`);
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+    const response = await fetch(`${API_URL}/api/v1/samples/?buyer_code=${buyerCode}&year=${year}&month=${month}`);
     const samples = await response.json();
     const sequence = String(samples.length + 1).padStart(3, "0");
     return `${buyerCode}_${year}_${month}_${sequence}`;
@@ -89,7 +90,8 @@ export default function SamplePrimaryInfoPage() {
 
   const loadSamples = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/samples/");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/`);
       if (response.ok) {
         const data = await response.json();
         setSamples(Array.isArray(data) ? data : []);
@@ -107,7 +109,8 @@ export default function SamplePrimaryInfoPage() {
 
   const loadBuyers = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/v1/buyers/");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/buyers/`);
       if (response.ok) {
         const data = await response.json();
         setBuyers(Array.isArray(data) ? data : []);
@@ -123,7 +126,8 @@ export default function SamplePrimaryInfoPage() {
   const loadStyles = async () => {
     try {
       // Load style summaries to show each style only once (not individual variants)
-      const response = await fetch("http://localhost:8000/api/v1/samples/styles?limit=1000");
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+      const response = await fetch(`${API_URL}/api/v1/samples/styles?limit=1000`);
       if (response.ok) {
         const data = await response.json();
         setStyles(Array.isArray(data) ? data : []);
@@ -201,8 +205,9 @@ export default function SamplePrimaryInfoPage() {
       // Get the first variant for this style to populate color/item/gauge
       // This is just for auto-filling - the sample will use style_summary_id
       try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
         const variantsResponse = await fetch(
-          `http://localhost:8000/api/v1/samples/style-variants?style_summary_id=${styleId}&limit=1`
+          `${API_URL}/api/v1/samples/style-variants?style_summary_id=${styleId}&limit=1`
         );
         if (variantsResponse.ok) {
           const variants = await variantsResponse.json();
@@ -245,10 +250,11 @@ export default function SamplePrimaryInfoPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
       const method = editingSample ? "PUT" : "POST";
       const url = editingSample
-        ? `http://localhost:8000/api/v1/samples/${editingSample.id}`
-        : "http://localhost:8000/api/v1/samples/";
+        ? `${API_URL}/api/v1/samples/${editingSample.id}`
+        : `${API_URL}/api/v1/samples/`;
 
       await fetch(url, {
         method,
@@ -283,7 +289,8 @@ export default function SamplePrimaryInfoPage() {
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this sample?")) {
       try {
-        await fetch(`http://localhost:8000/api/v1/samples/${id}`, {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+        await fetch(`${API_URL}/api/v1/samples/${id}`, {
           method: "DELETE",
         });
         toast.success("Sample deleted successfully");

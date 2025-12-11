@@ -19,12 +19,12 @@ services:
 
   backend:
     build:
-      context: ./shad-theme-dashboard/backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: rmg_erp_backend
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
     volumes:
-      - ./shad-theme-dashboard/backend:/app
+      - ./backend:/app
     ports:
       - "8000:8000"
     environment:
@@ -41,21 +41,21 @@ services:
 
   frontend:
     build:
-      context: ./shad-theme-dashboard
+      context: .
       dockerfile: Dockerfile.frontend
     container_name: rmg_erp_frontend
     command: npm run start
     volumes:
-      - ./shad-theme-dashboard/app:/app/app
-      - ./shad-theme-dashboard/components:/app/components
-      - ./shad-theme-dashboard/lib:/app/lib
-      - ./shad-theme-dashboard/public:/app/public
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./lib:/app/lib
+      - ./public:/app/public
       - /app/node_modules
       - /app/.next
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://backend:8000
       - HOSTNAME=0.0.0.0
       - PORT=3000
       - NODE_ENV=production
